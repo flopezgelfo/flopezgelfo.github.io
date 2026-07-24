@@ -197,8 +197,9 @@
   }
 
   function render(){
-    if(!state.ready){ content.innerHTML = '<div class="loading-msg">Cargando la caja...</div>'; return; }
-    if(!state.perfil){ renderProfileModal(); return; }
+    if(!state.ready){
+  content.innerHTML = '<div class="loading-msg">TEST: state.ready es falso</div>';
+  return;
     closeModal();
     if(state.activeTab==='resumen') renderResumen();
     else if(state.activeTab==='movimientos') renderMovimientos();
