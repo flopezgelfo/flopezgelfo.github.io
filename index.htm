@@ -206,6 +206,50 @@
   }
 
   function renderProfileModal(){
+  let overlay = document.querySelector('.modal-overlay');
+
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    document.body.appendChild(overlay);
+  }
+
+  overlay.innerHTML = `
+    <div class="modal">
+      <h2>¡Hola! 👋</h2>
+      <p>Ingresá con Google para acceder a la caja de 6to.</p>
+      <button class="btn" id="login-google" style="width:100%">
+        Entrar con Google
+      </button>
+    </div>
+  `;
+
+  overlay.querySelector('#login-google')
+    .addEventListener('click', loginGoogle);
+
+  content.innerHTML = '';
+}
+async function loginGoogle(){
+  const provider = new firebaseTools.GoogleAuthProvider();
+
+  try{
+    const result = await firebaseTools.signInWithPopup(
+      firebaseAuth,
+      provider
+    );
+
+    state.perfil = {
+      nombre: result.user.displayName,
+      email: result.user.email,
+      uid: result.user.uid
+    };
+
+    render();
+
+  }catch(error){
+    alert("Error al iniciar sesión: " + error.message);
+  }
+}
     let overlay = document.querySelector('.modal-overlay');
     if(!overlay){
       overlay = document.createElement('div');
@@ -468,7 +512,23 @@
     });
   });
 
-  loadAll();
+  firebaseTools.onAuthStateChanged(firebaseAuth, user => {
+
+  if(user){
+    state.perfil = {
+      nombre: user.displayName,
+      email: user.email,
+      uid: user.uid
+    };
+
+    loadAll();
+
+  }else{
+    state.ready = true;
+    render();
+  }
+
+});;
 </script>
 </body>
 </html>
