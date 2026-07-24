@@ -102,6 +102,39 @@
   <main id="content"><div class="loading-msg">Cargando la caja...</div></main>
 </div>
 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getDatabase, ref, set, get, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "TU_API_KEY",
+    authDomain: "kermes-e63f1.firebaseapp.com",
+    projectId: "kermes-e63f1",
+    storageBucket: "kermes-e63f1.firebasestorage.app",
+    messagingSenderId: "93819671000",
+    appId: "1:93819671000:web:a401591c40171fb2c8a2ad",
+    measurementId: "G-LVJWWLPCF0"
+  };
+
+  const app = initializeApp(firebaseConfig);
+
+  window.firebaseAuth = getAuth(app);
+  window.firebaseDB = getDatabase(app);
+
+  window.firebaseTools = {
+    GoogleAuthProvider,
+    signInWithPopup,
+    onAuthStateChanged,
+    signOut,
+    ref,
+    set,
+    get,
+    onValue,
+    push,
+    remove
+  };
+</script>
 <script>
   const COMISIONES = [
     {id:'buffet', nombre:'Buffet', hex:'#D9A441'},
