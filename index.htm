@@ -515,20 +515,24 @@ async function loginGoogle(){
   firebaseTools.onAuthStateChanged(firebaseAuth, user => {
 
   if(user){
+
     state.perfil = {
       nombre: user.displayName,
       email: user.email,
       uid: user.uid
     };
 
-    loadAll();
-
-  }else{
     state.ready = true;
     render();
+
+  } else {
+
+    state.ready = true;
+    render();
+
   }
 
-});;
+});
 </script>
 </body>
 </html>
