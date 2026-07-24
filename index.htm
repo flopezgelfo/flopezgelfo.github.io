@@ -118,6 +118,7 @@
   };
 
   const app = initializeApp(firebaseConfig);
+  console.log("Firebase inició correctamente");
 
   window.firebaseAuth = getAuth(app);
   window.firebaseDB = getDatabase(app);
@@ -136,6 +137,7 @@
   };
 </script>
 <script>
+  console.log("Código principal cargó");
   const COMISIONES = [
     {id:'buffet', nombre:'Buffet', hex:'#D9A441'},
     {id:'comida', nombre:'Comida (descartables e insumos)', hex:'#6B8F71'},
