@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kermés 6to Año</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+    :root{
+      --board:#1B3A2B; --board-dark:#142B20; --paper:#FBF7EE; --paper-line:#E7DFC9;
+      --ink:#24333B; --ink-soft:#5B6B66; --ticket-red:#E0483E; --coin-gold:#D9A441; --chalk:#F5F1E6;
+      --c-buffet:#D9A441; --c-comida:#6B8F71; --c-compras:#3B6E8F; --c-comunicaciones:#7B5EA7; --c-juegos:#E0483E; --c-premios:#D6336C;
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:'Work Sans',sans-serif;}
+    .app{max-width:880px;margin:0 auto;padding-bottom:60px;}
+    .board{background:var(--board);background-image:radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.04), transparent 60%);padding:34px 24px 44px;position:relative;}
+    .board::after{content:"";position:absolute;left:0;right:0;bottom:0;height:14px;background:repeating-linear-gradient(90deg,#8a6b3e 0 18px, #7a5d34 18px 36px);}
+    .board-inner{max-width:760px;margin:0 auto;text-align:center;}
+    .board h1{font-family:'Patrick Hand',cursive;color:var(--chalk);font-size:2.6rem;margin:6px 0 4px;letter-spacing:0.5px;}
+    .board p{color:#c9d6c9;font-size:0.95rem;margin:0;font-weight:500;}
+    .board .icon{font-size:1.8rem;}
+    .tabs{display:flex;justify-content:center;gap:0;background:var(--board-dark);position:sticky;top:0;z-index:10;box-shadow:0 3px 8px rgba(0,0,0,0.15);}
+    .tab{flex:1;max-width:220px;padding:14px 10px;background:transparent;border:none;color:#cfd9d0;font-family:'Work Sans';font-weight:600;font-size:0.9rem;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;}
+    .tab:hover{color:#fff;}
+    .tab.active{color:var(--chalk);border-bottom-color:var(--ticket-red);background:rgba(255,255,255,0.04);}
+    main{padding:26px 20px 10px;}
+    .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px;}
+    .stat{background:#fff;border:1px solid var(--paper-line);border-radius:10px;padding:16px 14px;text-align:center;}
+    .stat .label{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-soft);font-weight:600;}
+    .stat .value{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.35rem;margin-top:4px;}
+    .stat.in .value{color:var(--c-comida);}
+    .stat.out .value{color:var(--ticket-red);}
+    .stat.balance .value{color:var(--ink);}
+    .goal-card{background:#fff;border:1px solid var(--paper-line);border-radius:10px;padding:16px 18px;margin-bottom:22px;}
+    .goal-card h3{margin:0 0 10px;font-family:'Patrick Hand';font-size:1.3rem;color:var(--ink);}
+    .goal-bar-track{background:#EFEAD9;border-radius:20px;height:16px;overflow:hidden;}
+    .goal-bar-fill{background:linear-gradient(90deg,var(--coin-gold),var(--ticket-red));height:100%;transition:width .4s;}
+    .goal-meta{display:flex;justify-content:space-between;font-size:0.8rem;color:var(--ink-soft);margin-top:6px;gap:10px;flex-wrap:wrap;}
+    .goal-edit{display:flex;gap:8px;margin-top:10px;}
+    h2.section-title{font-family:'Patrick Hand';font-size:1.4rem;margin:0 0 12px;}
+    .profile-banner{background:#fff;border:1px dashed var(--ink-soft);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;font-size:0.85rem;}
+    .profile-banner button{background:none;border:none;color:var(--ticket-red);font-weight:600;cursor:pointer;font-size:0.8rem;}
+    .form-card{background:#fff;border:1px solid var(--paper-line);border-radius:10px;padding:18px;margin-bottom:22px;}
+    .form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+    .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;}
+    .field label{font-size:0.72rem;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.04em;}
+    input,select,textarea{font-family:'Work Sans';border:1px solid #D8D0BB;border-radius:6px;padding:9px 10px;font-size:0.9rem;background:#FEFDFA;color:var(--ink);}
+    input:focus,select:focus,textarea:focus{outline:2px solid var(--coin-gold);outline-offset:1px;}
+    .btn{background:var(--ticket-red);color:#fff;border:none;border-radius:7px;padding:10px 18px;font-weight:700;font-size:0.9rem;cursor:pointer;font-family:'Work Sans';}
+    .btn.secondary{background:var(--board);}
+    .btn:disabled{opacity:0.5;cursor:not-allowed;}
+    .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+    .chip{border:1px solid #D8D0BB;background:#fff;border-radius:20px;padding:6px 13px;font-size:0.78rem;font-weight:600;cursor:pointer;color:var(--ink-soft);}
+    .chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+    .ticket-list{display:flex;flex-direction:column;gap:10px;}
+    .ticket{display:flex;background:#fff;border:1px solid var(--paper-line);border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+    .ticket .stub{width:8px;flex-shrink:0;}
+    .ticket-body{flex:1;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+    .ticket-tag{display:inline-block;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff;margin-bottom:4px;}
+    .ticket-desc{font-weight:600;font-size:0.92rem;}
+    .ticket-meta{font-size:0.75rem;color:var(--ink-soft);margin-top:2px;}
+    .ticket-right{display:flex;align-items:center;gap:12px;}
+    .ticket-amount{font-family:'JetBrains Mono';font-weight:700;font-size:1rem;}
+    .del-btn{background:none;border:none;color:#B8AF9A;cursor:pointer;font-size:0.95rem;}
+    .del-btn:hover{color:var(--ticket-red);}
+    .empty{text-align:center;color:var(--ink-soft);padding:30px 10px;font-size:0.9rem;}
+    .comision-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;}
+    .com-card{background:#fff;border:1px solid var(--paper-line);border-radius:10px;overflow:hidden;}
+    .com-head{padding:12px 14px;color:#fff;font-family:'Patrick Hand';font-size:1.15rem;}
+    .com-body{padding:12px 14px;}
+    .task-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid #F2EEE0;font-size:0.85rem;}
+    .task-row:last-child{border-bottom:none;}
+    .task-row input[type=checkbox]{margin-top:3px;}
+    .task-row.done label{text-decoration:line-through;color:var(--ink-soft);}
+    .task-add{display:flex;gap:6px;margin-top:10px;}
+    .task-add input{flex:1;font-size:0.82rem;padding:7px 9px;}
+    .task-add button{padding:7px 12px;font-size:0.78rem;}
+    .modal-overlay{position:fixed;inset:0;background:rgba(20,30,25,0.55);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;}
+    .modal{background:var(--paper);border-radius:12px;padding:26px;max-width:360px;width:100%;text-align:center;}
+    .modal h2{font-family:'Patrick Hand';font-size:1.6rem;margin:0 0 6px;}
+    .modal p{color:var(--ink-soft);font-size:0.85rem;margin:0 0 16px;}
+    .modal input{width:100%;margin-bottom:12px;text-align:center;font-size:1rem;}
+    .loading-msg{text-align:center;padding:40px;color:var(--ink-soft);}
+    @media(max-width:560px){ .stat-row{grid-template-columns:1fr 1fr;} .stat.balance{grid-column:span 2;} }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="board">
+    <div class="board-inner">
+      <div class="icon">🎪</div>
+      <h1>Kermés 6to Año</h1>
+      <p>Caja común para el viaje de egresados</p>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="tab active" data-tab="resumen">Resumen</button>
+    <button class="tab" data-tab="movimientos">Movimientos</button>
+    <button class="tab" data-tab="comisiones">Comisiones</button>
+  </nav>
+  <main id="content"><div class="loading-msg">Cargando la caja...</div></main>
+</div>
+
+<script>
+  const COMISIONES = [
+    {id:'buffet', nombre:'Buffet', hex:'#D9A441'},
+    {id:'comida', nombre:'Comida (descartables e insumos)', hex:'#6B8F71'},
+    {id:'compras', nombre:'Compras y Administración', hex:'#3B6E8F'},
+    {id:'comunicaciones', nombre:'Comunicaciones y Organización', hex:'#7B5EA7'},
+    {id:'juegos', nombre:'Juegos', hex:'#E0483E'},
+    {id:'premios', nombre:'Premios', hex:'#D6336C'},
+  ];
+
+  let state = {
+    perfil:null, movimientos:[], tareas:[], meta:{ objetivo:0 },
+    activeTab:'resumen', filtroComision:'todas', filtroTipo:'todos', ready:false
+  };
+
+  const $ = (sel) => document.querySelector(sel);
+  const content = $('#content');
+  const money = (n) => (n||0).toLocaleString('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0});
+  const comisionById = (id) => COMISIONES.find(c=>c.id===id);
+
+  // Storage adapter: si existe window.storage lo usa; si no, usa localStorage.
+  async function safeGet(key, shared){
+    try{
+      if(window.storage?.get){
+        const r = await window.storage.get(key, shared);
+        return r ? JSON.parse(r.value) : null;
+      }
+    }catch(e){}
+    try{
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  }
+  async function safeSet(key, value, shared){
+    try{
+      if(window.storage?.set){
+        await window.storage.set(key, JSON.stringify(value), shared);
+        return true;
+      }
+    }catch(e){}
+    try{
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    }catch(e){ return false; }
+  }
+
+  async function loadAll(){
+    const [perfil, movimientos, tareas, meta] = await Promise.all([
+      safeGet('perfil', false),
+      safeGet('movimientos', true),
+      safeGet('tareas', true),
+      safeGet('meta', true)
+    ]);
+    state.perfil = perfil;
+    state.movimientos = movimientos || [];
+    state.tareas = tareas || [];
+    state.meta = meta || { objetivo:0 };
+    state.ready = true;
+    render();
+  }
+
+  function render(){
+    if(!state.ready){ content.innerHTML = '<div class="loading-msg">Cargando la caja...</div>'; return; }
+    if(!state.perfil){ renderProfileModal(); return; }
+    closeModal();
+    if(state.activeTab==='resumen') renderResumen();
+    else if(state.activeTab==='movimientos') renderMovimientos();
+    else renderComisiones();
+  }
+
+  function renderProfileModal(){
+    let overlay = document.querySelector('.modal-overlay');
+    if(!overlay){
+      overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      document.body.appendChild(overlay);
+    }
+    overlay.innerHTML = `
+      <div class="modal">
+        <h2>¡Hola! 👋</h2>
+        <p>Decinos tu nombre para que tus compañeros sepan quién cargó cada boleto.</p>
+        <input id="nombre-input" placeholder="Tu nombre y apellido" />
+        <button class="btn" id="save-name" style="width:100%">Entrar a la caja</button>
+      </div>`;
+    const input = overlay.querySelector('#nombre-input');
+    input.addEventListener('keydown', e => { if(e.key==='Enter') submitName(); });
+    overlay.querySelector('#save-name').addEventListener('click', submitName);
+    content.innerHTML = '';
+  }
+  function closeModal(){ document.querySelector('.modal-overlay')?.remove(); }
+  async function submitName(){
+    const val = document.querySelector('#nombre-input').value.trim();
+    if(!val) return;
+    state.perfil = { nombre: val };
+    await safeSet('perfil', state.perfil, false);
+    render();
+  }
+
+  function totales(){
+    let ingresos=0, gastos=0;
+    const porComision = {};
+    COMISIONES.forEach(c => porComision[c.id] = {ingresos:0, gastos:0});
+    state.movimientos.forEach(m => {
+      if(m.tipo==='ingreso') ingresos += m.monto; else gastos += m.monto;
+      if(porComision[m.comision]){
+        if(m.tipo==='ingreso') porComision[m.comision].ingresos += m.monto;
+        else porComision[m.comision].gastos += m.monto;
+      }
+    });
+    return { ingresos, gastos, saldo: ingresos-gastos, porComision };
+  }
+
+  function renderResumen(){
+    const t = totales();
+    const objetivo = state.meta.objetivo || 0;
+    const pct = objetivo>0 ? Math.min(100, Math.round((t.saldo/objetivo)*100)) : 0;
+
+    const maxMonto = Math.max(1, ...COMISIONES.map(c => t.porComision[c.id].ingresos + t.porComision[c.id].gastos));
+
+    content.innerHTML = `
+      <div class="profile-banner">
+        <span>Estás como <strong>${escapeHtml(state.perfil.nombre)}</strong></span>
+        <button id="change-name">cambiar nombre</button>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat in"><div class="label">Recaudado</div><div class="value">${money(t.ingresos)}</div></div>
+        <div class="stat out"><div class="label">Gastado</div><div class="value">${money(t.gastos)}</div></div>
+        <div class="stat balance"><div class="label">Saldo</div><div class="value">${money(t.saldo)}</div></div>
+      </div>
+
+      <div class="goal-card">
+        <h3>Objetivo del viaje</h3>
+        ${objetivo>0 ? `
+          <div class="goal-bar-track"><div class="goal-bar-fill" style="width:${pct}%"></div></div>
+          <div class="goal-meta"><span>${money(t.saldo)} reunidos</span><span>${pct}% de ${money(objetivo)}</span></div>
+        ` : `<p style="font-size:0.85rem;color:var(--ink-soft);margin:0;">Todavía no se cargó un objetivo de recaudación.</p>`}
+        <div class="goal-edit">
+          <input id="objetivo-input" type="number" min="0" placeholder="Monto objetivo en $" value="${objetivo||''}">
+          <button class="btn secondary" id="save-objetivo">Guardar</button>
+        </div>
+      </div>
+
+      <h2 class="section-title">Por comisión</h2>
+      <div class="comision-bars">
+        ${COMISIONES.map(c => {
+          const d = t.porComision[c.id];
+          const net = d.ingresos - d.gastos;
+          const width = Math.round(((d.ingresos+d.gastos)/maxMonto)*100);
+          return `
+            <div class="cbar-row" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+              <div class="cbar-tag" style="width:150px;font-size:0.8rem;font-weight:600;flex-shrink:0;color:${c.hex}">${c.nombre}</div>
+              <div class="cbar-track" style="flex:1;background:#EFEAD9;border-radius:6px;height:10px;overflow:hidden;">
+                <div class="cbar-fill" style="height:100%;width:${width}%;background:${c.hex}"></div>
+              </div>
+              <div class="cbar-num" style="width:90px;text-align:right;font-family:'JetBrains Mono';font-size:0.78rem;color:var(--ink-soft)">${money(net)}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+
+    $('#change-name').addEventListener('click', ()=>{ state.perfil=null; render(); });
+    $('#save-objetivo').addEventListener('click', async ()=>{
+      const val = parseFloat($('#objetivo-input').value) || 0;
+      state.meta.objetivo = val;
+      await safeSet('meta', state.meta, true);
+      render();
+    });
+  }
+
+  function renderMovimientos(){
+    const filtered = state.movimientos
+      .filter(m => state.filtroComision==='todas' || m.comision===state.filtroComision)
+      .filter(m => state.filtroTipo==='todos' || m.tipo===state.filtroTipo)
+      .sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||'') || (b.id||'').localeCompare(a.id||''));
+
+    content.innerHTML = `
+      <div class="form-card">
+        <h2 class="section-title" style="margin-bottom:14px;">Cargar movimiento</h2>
+        <div class="form-row">
+          <div class="field"><label>Tipo</label>
+            <select id="f-tipo"><option value="ingreso">Ingreso</option><option value="gasto">Gasto</option></select>
+          </div>
+          <div class="field"><label>Comisión</label>
+            <select id="f-comision">${COMISIONES.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('')}</select>
+          </div>
+          <div class="field"><label>Monto ($)</label><input id="f-monto" type="number" min="0" placeholder="0"></div>
+        </div>
+        <div class="form-row">
+          <div class="field" style="flex:3"><label>Descripción</label><input id="f-desc" type="text" placeholder="Ej: compra de vasos y servilletas"></div>
+          <div class="field" style="flex:1"><label>Fecha</label><input id="f-fecha" type="date"></div>
+        </div>
+        <button class="btn" id="add-mov">+ Agregar boleto</button>
+      </div>
+
+      <div class="filters">
+        <span class="chip ${state.filtroTipo==='todos'?'active':''}" data-ftipo="todos">Todos</span>
+        <span class="chip ${state.filtroTipo==='ingreso'?'active':''}" data-ftipo="ingreso">Ingresos</span>
+        <span class="chip ${state.filtroTipo==='gasto'?'active':''}" data-ftipo="gasto">Gastos</span>
+      </div>
+      <div class="filters">
+        <span class="chip ${state.filtroComision==='todas'?'active':''}" data-fcom="todas">Todas las comisiones</span>
+        ${COMISIONES.map(c=>`<span class="chip ${state.filtroComision===c.id?'active':''}" data-fcom="${c.id}">${c.nombre}</span>`).join('')}
+      </div>
+
+      <div class="ticket-list">
+        ${
+          filtered.length===0
+            ? '<div class="empty">Todavía no hay movimientos cargados con este filtro.</div>'
+            : filtered.map(m => {
+                const c = comisionById(m.comision);
+                return `
+                  <div class="ticket">
+                    <div class="stub" style="background:${c?c.hex:'#999'}"></div>
+                    <div class="ticket-body">
+                      <div class="ticket-left" style="min-width:240px">
+                        <span class="ticket-tag" style="background:${c?c.hex:'#999'}">${c?c.nombre:m.comision}</span>
+                        <div class="ticket-desc">${escapeHtml(m.descripcion || '(sin descripción)')}</div>
+                        <div class="ticket-meta">${escapeHtml(m.autor)} · ${formatFecha(m.fecha)}</div>
+                      </div>
+                      <div class="ticket-right">
+                        <div class="ticket-amount ${m.tipo==='ingreso'?'in':'out'}">${m.tipo==='ingreso'?'+':'−'}${money(m.monto)}</div>
+                        <button class="del-btn" data-del="${m.id}" title="Eliminar">✕</button>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')
+        }
+      </div>
+    `;
+
+    const today = new Date().toISOString().slice(0,10);
+    $('#f-fecha').value = today;
+
+    $('#add-mov').addEventListener('click', async ()=>{
+      const monto = parseFloat($('#f-monto').value);
+      if(!monto || monto<=0){ $('#f-monto').focus(); return; }
+      const nuevo = {
+        id: Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+        tipo: $('#f-tipo').value,
+        comision: $('#f-comision').value,
+        monto,
+        descripcion: $('#f-desc').value.trim(),
+        autor: state.perfil.nombre,
+        fecha: $('#f-fecha').value || today
+      };
+      state.movimientos.push(nuevo);
+      await safeSet('movimientos', state.movimientos, true);
+      render();
+    });
+
+    content.querySelectorAll('[data-ftipo]').forEach(el => el.addEventListener('click', ()=>{ state.filtroTipo = el.dataset.ftipo; render(); }));
+    content.querySelectorAll('[data-fcom]').forEach(el => el.addEventListener('click', ()=>{ state.filtroComision = el.dataset.fcom; render(); }));
+    content.querySelectorAll('[data-del]').forEach(el => el.addEventListener('click', async ()=>{
+      if(!confirm('¿Eliminar este movimiento?')) return;
+      state.movimientos = state.movimientos.filter(m => m.id !== el.dataset.del);
+      await safeSet('movimientos', state.movimientos, true);
+      render();
+    }));
+  }
+
+  function renderComisiones(){
+    content.innerHTML = `
+      <h2 class="section-title">Tareas por comisión</h2>
+      <div class="comision-grid">
+        ${COMISIONES.map(c => {
+          const tareas = state.tareas.filter(t => t.comision===c.id).sort((a,b)=>a.hecho-b.hecho);
+          return `
+            <div class="com-card">
+              <div class="com-head" style="background:${c.hex}">${c.nombre}</div>
+              <div class="com-body">
+                ${
+                  tareas.length===0
+                    ? '<div class="empty" style="padding:10px 0;">Sin tareas todavía.</div>'
+                    : tareas.map(t => `
+                      <div class="task-row ${t.hecho?'done':''}">
+                        <input type="checkbox" ${t.hecho?'checked':''} data-toggle="${t.id}">
+                        <label>${escapeHtml(t.texto)} <span style="color:var(--ink-soft);font-size:0.75rem;">— ${escapeHtml(t.autor)}</span></label>
+                        <button class="del-btn" data-deltask="${t.id}" style="margin-left:auto;">✕</button>
+                      </div>
+                    `).join('')
+                }
+                <div class="task-add">
+                  <input type="text" placeholder="Nueva tarea..." data-taskinput="${c.id}">
+                  <button class="btn secondary" data-addtask="${c.id}">+</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+
+    content.querySelectorAll('[data-toggle]').forEach(el => {
+      el.addEventListener('change', async ()=>{
+        const t = state.tareas.find(x => x.id===el.dataset.toggle);
+        if(t){ t.hecho = el.checked; await safeSet('tareas', state.tareas, true); render(); }
+      });
+    });
+    content.querySelectorAll('[data-deltask]').forEach(el => {
+      el.addEventListener('click', async ()=>{
+        state.tareas = state.tareas.filter(t => t.id!==el.dataset.deltask);
+        await safeSet('tareas', state.tareas, true);
+        render();
+      });
+    });
+    content.querySelectorAll('[data-addtask]').forEach(el => {
+      el.addEventListener('click', async ()=>{
+        const comId = el.dataset.addtask;
+        const input = content.querySelector(`[data-taskinput="${comId}"]`);
+        const texto = input.value.trim();
+        if(!texto) return;
+        state.tareas.push({ id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), comision:comId, texto, hecho:false, autor:state.perfil.nombre });
+        await safeSet('tareas', state.tareas, true);
+        render();
+      });
+    });
+  }
+
+  function formatFecha(f){ if(!f) return ''; const [y,m,d] = f.split('-'); return `${d}/${m}/${y}`; }
+  function escapeHtml(str){ return (str||'').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
+
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      state.activeTab = tab.dataset.tab;
+      render();
+    });
+  });
+
+  loadAll();
+</script>
+</body>
+</html>
