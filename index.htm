@@ -108,18 +108,22 @@
   import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
   const firebaseConfig = {
-  apiKey: "AIzaSyArDVKk_0Y77AGHgspR9A2NCQG9B421Vc4",
-  authDomain: "kermesse-6to.firebaseapp.com",
-  projectId: "kermesse-6to",
-  storageBucket: "kermesse-6to.firebasestorage.app",
-  messagingSenderId: "748991990147",
-  appId: "1:748991990147:web:45487022716efcee030eb6",
-  measurementId: "G-CRZCB3Y8E4"
-};
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_PROYECTO.firebaseapp.com",
+    projectId: "TU_PROYECTO",
+    storageBucket: "TU_PROYECTO.appspot.com",
+    messagingSenderId: "TU_SENDER_ID",
+    appId: "TU_APP_ID"
+  };
 
   const fbApp = initializeApp(firebaseConfig);
   const db = getFirestore(fbApp);
   // ====== fin config Firebase ======
+
+  // ====== 3) CLAVE DE ACCESO: cambiá este valor por la clave que le vas a pasar a tus compañeros ======
+  // OJO: esto es solo un filtro simple (cualquiera que vea el código fuente puede verla), no es seguridad real.
+  const CLAVE_ACCESO = "KERMES2026";
+  // ====== fin clave de acceso ======
 
   const COMISIONES = [
     {id:'buffet', nombre:'Buffet', hex:'#D9A441'},
@@ -199,20 +203,29 @@
     overlay.innerHTML = `
       <div class="modal">
         <h2>¡Hola! 👋</h2>
-        <p>Decinos tu nombre para que tus compañeros sepan quién cargó cada boleto.</p>
+        <p>Decinos tu nombre para que tus compañeros sepan quién cargó cada boleto, y la clave del grupo.</p>
         <input id="nombre-input" placeholder="Tu nombre y apellido" />
+        <input id="clave-input" type="password" placeholder="Clave del grupo" />
+        <p id="clave-error" style="color:var(--ticket-red);font-size:0.78rem;margin:-6px 0 12px;display:none;">Clave incorrecta, probá de nuevo.</p>
         <button class="btn" id="save-name" style="width:100%">Entrar a la caja</button>
       </div>`;
-    const input = overlay.querySelector('#nombre-input');
-    input.addEventListener('keydown', e => { if(e.key==='Enter') submitName(); });
+    const nombreInput = overlay.querySelector('#nombre-input');
+    const claveInput = overlay.querySelector('#clave-input');
+    claveInput.addEventListener('keydown', e => { if(e.key==='Enter') submitName(); });
+    nombreInput.addEventListener('keydown', e => { if(e.key==='Enter') claveInput.focus(); });
     overlay.querySelector('#save-name').addEventListener('click', submitName);
     content.innerHTML = '';
   }
   function closeModal(){ document.querySelector('.modal-overlay')?.remove(); }
   function submitName(){
-    const val = document.querySelector('#nombre-input').value.trim();
-    if(!val) return;
-    state.perfil = { nombre: val };
+    const nombre = document.querySelector('#nombre-input').value.trim();
+    const clave = document.querySelector('#clave-input').value;
+    if(!nombre) return;
+    if(clave !== CLAVE_ACCESO){
+      document.querySelector('#clave-error').style.display = 'block';
+      return;
+    }
+    state.perfil = { nombre };
     savePerfilLocal(state.perfil);
     render();
   }
@@ -256,6 +269,7 @@
           <div class="goal-bar-track"><div class="goal-bar-fill" style="width:${pct}%"></div></div>
           <div class="goal-meta"><span>${money(t.saldo)} reunidos</span><span>${pct}% de ${money(objetivo)}</span></div>
         ` : `<p style="font-size:0.85rem;color:var(--ink-soft);margin:0;">Todavía no se cargó un objetivo de recaudación.</p>`}
+        ${state.meta.editadoPor ? `<div class="ticket-meta" style="margin-top:6px;">Actualizado por ${escapeHtml(state.meta.editadoPor)}</div>` : ''}
         <div class="goal-edit">
           <input id="objetivo-input" type="number" min="0" placeholder="Monto objetivo en $" value="${objetivo||''}">
           <button class="btn secondary" id="save-objetivo">Guardar</button>
@@ -284,8 +298,8 @@
     $('#change-name').addEventListener('click', ()=>{ state.perfil=null; render(); });
     $('#save-objetivo').addEventListener('click', async ()=>{
       const val = parseFloat($('#objetivo-input').value) || 0;
-      state.meta.objetivo = val;
-      await saveShared('meta', state.meta);
+      const nuevaMeta = { ...state.meta, objetivo: val, editadoPor: state.perfil.nombre };
+      await saveShared('meta', nuevaMeta);
     });
   }
 
@@ -395,7 +409,7 @@
                     : tareas.map(t => `
                       <div class="task-row ${t.hecho?'done':''}">
                         <input type="checkbox" ${t.hecho?'checked':''} data-toggle="${t.id}">
-                        <label>${escapeHtml(t.texto)} <span style="color:var(--ink-soft);font-size:0.75rem;">— ${escapeHtml(t.autor)}</span></label>
+                        <label>${escapeHtml(t.texto)} <span style="color:var(--ink-soft);font-size:0.75rem;">— creada por ${escapeHtml(t.autor)}${t.hecho && t.completadaPor ? ` · tildada por ${escapeHtml(t.completadaPor)}` : ''}</span></label>
                         <button class="del-btn" data-deltask="${t.id}" style="margin-left:auto;">✕</button>
                       </div>
                     `).join('')
@@ -413,7 +427,9 @@
 
     content.querySelectorAll('[data-toggle]').forEach(el => {
       el.addEventListener('change', async ()=>{
-        const nuevasTareas = state.tareas.map(t => t.id===el.dataset.toggle ? {...t, hecho: el.checked} : t);
+        const nuevasTareas = state.tareas.map(t => t.id===el.dataset.toggle
+          ? {...t, hecho: el.checked, completadaPor: el.checked ? state.perfil.nombre : null}
+          : t);
         await saveShared('tareas', nuevasTareas);
       });
     });
